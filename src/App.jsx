@@ -1,14 +1,12 @@
 
+import React from 'react';
+import Analytics from './pages/Analytics';
 import './App.css'
 
-function App() {
- 
-
+const App = () => {
   return (
-    <>
-     
-    </>
-  )
-}
+    <Analytics />
+  );
+};
 
-export default App
+export default App;
