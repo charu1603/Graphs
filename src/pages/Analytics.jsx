@@ -1,5 +1,5 @@
-
 import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import BarChart from '../components/BarChart';
 import PieChart from '../components/PieChart';
 import LineChart from '../components/LineChart';
@@ -7,9 +7,11 @@ import DoughnutChart from '../components/DoughnutChart';
 import RadarChart from '../components/RadarChart';
 import data from '../data/eve.json';
 import 'chartjs-adapter-date-fns';
-import '../App.css'
+import Sidebar from '../components/Sidebar';
+import '../App.css';
 
-import { Chart as ChartJS,CategoryScale,LinearScale,BarElement,PointElement,LineElement,ArcElement,Title, Tooltip, Legend, TimeScale,RadialLinearScale, Filler} from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Title, Tooltip, Legend, TimeScale, RadialLinearScale, Filler } from 'chart.js';
+import { HeadingIcon } from 'lucide-react';
 
 ChartJS.register(
   CategoryScale,
@@ -30,8 +32,12 @@ const Analytics = () => {
   const [portData, setPortData] = useState([]);
   const [categoryData, setCategoryData] = useState([]);
   const [timeData, setTimeData] = useState([]);
-  const [visibleChart, setVisibleChart] = useState('all'); 
-  
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       const parsedData = data;
@@ -53,9 +59,8 @@ const Analytics = () => {
         { dest_port: Number(key), count: portCounts[key] }
       )));
       setCategoryData(Object.keys(categoryCounts).map(key => (
-        { category: key, count: categoryCounts[key] 
-
-        })));
+        { category: key, count: categoryCounts[key] }
+      )));
       setTimeData(Object.keys(timeCounts).map(key => (
         { timestamp: key, count: timeCounts[key] }
       )));
@@ -65,28 +70,46 @@ const Analytics = () => {
   }, []);
 
   return (
-    <div className="App text-center w-full p-[20px]">
-       
-       <nav className='flex justify-center h-[5rem] md:h-[3rem]'>
-        <ul className='flex md:gap-4 justify-center fixed'>
-          <li ><button className='bg-[#ff638433] md:px-3 py-1 px-2 rounded-sm' onClick={() => setVisibleChart('bar')}>Bar Chart</button></li>
-          <li><button className='bg-[#36a2eb33] md:px-3 py-1 px-2 rounded-sm' onClick={() => setVisibleChart('pie')}>Pie Chart</button></li>
-          <li><button className="bg-[#ffce5633] md:px-3 py-1 px-2 rounded-sm" onClick={() => setVisibleChart('line')}>Line Chart</button></li>
-          <li><button className='bg-[#4bc0c033] md:px-3 py-1 px-2 rounded-sm' onClick={() => setVisibleChart('doughnut')}>Doughnut Chart</button></li>
-          <li><button className='bg-[#9966ff33] md:px-3 py-1 px-2 rounded-sm' onClick={() => setVisibleChart('radar')}>Radar Chart</button></li>
-          <li><button className='bg-[#ff9f4033] md:px-3 py-1 px-2 rounded-sm' onClick={() => setVisibleChart('all')}>Show All</button></li>
-        </ul>
-      </nav>
-      <div className="chart-container">
-        {(visibleChart === 'all' || visibleChart === 'bar') && <BarChart data={portData} />}
-        {(visibleChart === 'all' || visibleChart === 'pie') && <PieChart data={categoryData} />}
-        {(visibleChart === 'all' || visibleChart === 'line') && <LineChart data={timeData} />}
-       
-        {(visibleChart === 'all' || visibleChart === 'doughnut') && <DoughnutChart data={categoryData} />}
-        {(visibleChart === 'all' || visibleChart === 'radar') && <RadarChart data={categoryData} />}
-    
+    <Router>
+      <div className="flex h-screen w-full">
+        <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <div className="flex-1 p-4 ">
+          <Routes>
+            <Route path="/" element={
+          <>
+           <div className="flex gap-2 h-screen flex-wrap md:flex-nowrap p-4">
+        <div className="flex flex-col flex-1">
+          <div className=" lg:h-[650px] lg:w-[500px] mb-4 md:mb-0">
+            <BarChart data={portData} />
+          </div>
+          <div className=" lg:h-[650px] w-full lg:w-[500px]">
+            <LineChart data={timeData} />
+          </div>
+        </div>
+        <div className="flex flex-col flex-1">
+          <div className=" md:h-[330px] w-full md:w-[250px] mb-4 md:mb-0">
+            <PieChart data={categoryData} />
+          </div>
+          <div className=" md:h-[330px] w-[250px] md:w-[250px]">
+            <RadarChart data={categoryData} />
+          </div>
+        </div>
+        <div className=" md:h-[550px] w-full md:w-[250px]">
+          <DoughnutChart data={categoryData} />
+        </div>
       </div>
-    </div>
+                
+              </>
+            }></Route>
+            <Route path="/bar" element={<BarChart data={portData} />} />
+            <Route path="/pie" element={<PieChart data={categoryData} />} />
+            <Route path="/line" element={<LineChart data={timeData} />} />
+            <Route path="/doughnut" element={<DoughnutChart data={categoryData} />} />
+            <Route path="/radar" element={<RadarChart data={categoryData} />} />
+          </Routes>
+        </div>
+      </div>
+    </Router>
   );
 };
 
